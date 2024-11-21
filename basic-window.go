@@ -65,8 +65,11 @@ type Position struct {
 }
 
 func getCenteredTextPos(text string, fontSize float32, spacing float32) Position {
+	// load default font
 	defaultFont := rl.GetFontDefault()
+	// measure text width and height using default font, font size, and spacing
 	textMeasurements := rl.MeasureTextEx(defaultFont, text, fontSize, spacing)
+	// return position to center text on screen
 	return Position{
 		X: int32(WindowWidth/2) - int32(textMeasurements.X/2),
 		Y: int32(WindowHeight/2) - int32(textMeasurements.Y/2),
