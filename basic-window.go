@@ -4,29 +4,18 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type gameScreen int
-
-const (
-	LOGO gameScreen = iota
-	TITLE
-	GAMEPLAY
-	ENDING
-)
-
-const (
-	WindowWidth  = 1920
-	WindowHeight = 1080
-)
-
-func main() {
-	windowTitle := "raylib [texture] example - sprite animation"
-
-	rl.InitWindow(int32(WindowWidth), int32(WindowHeight), windowTitle)
+func (game *Game) BasicWindow() {
+	rl.InitWindow(int32(game.Metadata.WindowWidth), int32(game.Metadata.WindowHeight), game.Metadata.WindowTitle)
 
 	currentScreen := LOGO
 	framesCounter := 0
 
+	game.Metadata.DefaultFont = rl.GetFontDefault()
+	game.Metadata.DefaultFontSize = 20
+	game.Metadata.DefaultFontSpacing = 1
+
 	rl.SetTargetFPS(60)
+	rl.SetExitKey(0)
 
 	for !rl.WindowShouldClose() {
 		switch currentScreen {
@@ -44,12 +33,34 @@ func main() {
 		case LOGO:
 			rl.DrawText("LOGO SCREEN", 20, 20, 40, rl.LightGray)
 			text := "WAIT FOR 2 SECONDS..."
-			pos := getCenteredTextPos(text, 20.0, 1.0)
-			rl.DrawText(text, pos.X, pos.Y, 20, rl.Gray)
+			pos := game.getCenteredTextPos(text, game.Metadata.DefaultFontSize, float32(game.Metadata.DefaultFontSpacing))
+			rl.DrawText(text, pos.X, pos.Y, game.Metadata.DefaultFontSize, rl.Gray)
 		case TITLE:
-			text := "Congrats! You created your first window!"
-			pos := getCenteredTextPos(text, 20.0, 1.0)
-			rl.DrawText("Congrats! You created your first window!", pos.X, pos.Y, 20.0, rl.LightGray)
+			title := "My Super Awesome Game"
+			text := "Press Any Key"
+			titlePos := game.getCenteredTextPos(title, game.Metadata.DefaultFontSize+20, float32(game.Metadata.DefaultFontSpacing))
+			textPos := game.getCenteredTextPos(text, game.Metadata.DefaultFontSize, float32(game.Metadata.DefaultFontSpacing))
+			rl.DrawText(title, titlePos.X, titlePos.Y, game.Metadata.DefaultFontSize+20, rl.LightGray)
+			rl.DrawText(text, textPos.X, textPos.Y+40, game.Metadata.DefaultFontSize, rl.LightGray)
+			// game.Gamepad()
+			pressedKey := rl.GetKeyPressed()
+			if pressedKey != 0 {
+				currentScreen = GAMEPLAY
+			}
+		case GAMEPLAY:
+			pressedKey := rl.GetKeyPressed()
+			if pressedKey == 256 {
+				currentScreen = PAUSED
+			}
+			game.Gameplay()
+		case PAUSED:
+			text := "Game Paused"
+			pos := game.getCenteredTextPos(text, game.Metadata.DefaultFontSize, float32(game.Metadata.DefaultFontSpacing))
+			rl.DrawText(text, pos.X, pos.Y-int32(0.25*float64(game.Metadata.WindowHeight)), game.Metadata.DefaultFontSize, rl.LightGray)
+			pressedKey := rl.GetKeyPressed()
+			if pressedKey == 256 {
+				currentScreen = GAMEPLAY
+			}
 		default:
 		}
 
@@ -57,21 +68,4 @@ func main() {
 	}
 
 	rl.CloseWindow()
-}
-
-type Position struct {
-	X int32
-	Y int32
-}
-
-func getCenteredTextPos(text string, fontSize float32, spacing float32) Position {
-	// load default font
-	defaultFont := rl.GetFontDefault()
-	// measure text width and height using default font, font size, and spacing
-	textMeasurements := rl.MeasureTextEx(defaultFont, text, fontSize, spacing)
-	// return position to center text on screen
-	return Position{
-		X: int32(WindowWidth/2) - int32(textMeasurements.X/2),
-		Y: int32(WindowHeight/2) - int32(textMeasurements.Y/2),
-	}
 }
