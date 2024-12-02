@@ -1,6 +1,12 @@
 package main
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	"learning-raylib/characters/player"
+	"learning-raylib/config"
+	"learning-raylib/inputs"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 type GameScreen int
 
@@ -13,42 +19,45 @@ const (
 )
 
 type Metadata struct {
-	DefaultFont        rl.Font
-	WindowTitle        string
-	WindowWidth        int32
-	WindowHeight       int32
-	DefaultFontSize    int32
-	DefaultFontSpacing int32
-	FrameCounter       int8
-	CurrentGameScreen  GameScreen
-}
-
-type Hero struct {
-	CurrentFrame int8
-	FrameSpeed   int8
-	FrameRect    rl.Rectangle
-	Position     rl.Vector2
-	Texture      rl.Texture2D
+	FrameCounter      int8
+	CurrentGameScreen GameScreen
 }
 
 type Game struct {
+	Inputs   inputs.Inputs
+	Config   config.Config
 	Metadata Metadata
-	Hero     Hero
+	Player   player.Player
 }
 
 func main() {
-	metadata := Metadata{
-		WindowTitle:  "learning raylib",
-		WindowWidth:  1280,
-		WindowHeight: 720,
-	}
+	// initialize game config
+	gameConfig := config.GetGameConfig()
+
+	// initialize inputs
+	inputs := inputs.Inputs{}
+	inputs.Initialize()
+
+	// initialize game metadata
+	metadata := Metadata{}
+
+	// initialize window
+	rl.InitWindow(int32(gameConfig.WindowWidth), int32(gameConfig.WindowHeight), gameConfig.WindowTitle)
+
+	// initialize player
+	player := player.Initialize()
+
 	game := Game{
+		Config:   gameConfig,
+		Inputs:   inputs,
 		Metadata: metadata,
+		Player:   player,
 	}
 
-	rl.InitWindow(int32(game.Metadata.WindowWidth), int32(game.Metadata.WindowHeight), game.Metadata.WindowTitle)
-	game.LoadTextures()
-	game.BasicWindow()
+	// start game
+	game.Start()
+
+	// clean up
 	game.UnloadTextures()
 	rl.CloseWindow()
 }

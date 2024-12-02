@@ -15,7 +15,7 @@ func (game *Game) getCenteredTextPos(text string, fontSize int32, spacing float3
 	textMeasurements := rl.MeasureTextEx(defaultFont, text, float32(fontSize), spacing)
 	// return position to center text on screen
 	return Position{
-		X: int32(game.Metadata.WindowWidth/2) - int32(textMeasurements.X/2) - int32(fontSize),
-		Y: int32(game.Metadata.WindowHeight/2) - int32(textMeasurements.Y/2),
+		X: int32(game.Config.WindowWidth/2) - int32(textMeasurements.X/2) - int32(fontSize),
+		Y: int32(game.Config.WindowHeight/2) - int32(textMeasurements.Y/2),
 	}
 }
