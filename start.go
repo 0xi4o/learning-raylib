@@ -10,9 +10,8 @@ func (game *Game) Start() {
 	game.Metadata.CurrentGameScreen = LOGO
 	game.Metadata.FrameCounter = 0
 
-	game.Player.Position = rl.NewVector2(float32(game.Config.WindowWidth/2)-32.0, float32(game.Config.WindowHeight/2)-64.0)
-
-	rl.SetTargetFPS(60)
+	rl.SetConfigFlags(rl.FlagVsyncHint)
+	rl.SetTargetFPS(240)
 	rl.SetExitKey(0)
 
 	for !rl.WindowShouldClose() {
@@ -27,13 +26,9 @@ func (game *Game) Start() {
 			switch game.Player.State {
 			case player.RUNNING:
 				numberOfFrames = 4
-				game.Player.Metadata.FrameRect.Width = float32(game.Player.Textures.Run.Width) / float32(numberOfFrames)
-				game.Player.Metadata.FrameRect.Height = float32(game.Player.Textures.Run.Height)
 				game.Player.Metadata.FrameSpeed = 20
 			default:
 				numberOfFrames = 6
-				game.Player.Metadata.FrameRect.Width = float32(game.Player.Textures.Idle.Width) / float32(numberOfFrames)
-				game.Player.Metadata.FrameRect.Height = float32(game.Player.Textures.Idle.Height)
 				game.Player.Metadata.FrameSpeed = 12
 			}
 			// update the frame
@@ -43,17 +38,20 @@ func (game *Game) Start() {
 				if game.Player.Metadata.CurrentFrame > int8(numberOfFrames) {
 					game.Player.Metadata.CurrentFrame = 0
 				}
-				game.Player.Metadata.FrameRect.X = float32(game.Player.Metadata.CurrentFrame) * game.Player.Metadata.FrameRect.Width
+				game.Player.Metadata.SrcRect.X = float32(game.Player.Metadata.CurrentFrame) * game.Player.Metadata.SrcRect.Width
 			}
 		}
 		rl.BeginDrawing()
 
 		rl.ClearBackground(rl.RayWhite)
 
+		if DebugMode {
+			rl.DrawFPS(10, 10)
+		}
+
 		switch game.Metadata.CurrentGameScreen {
 		case LOGO:
-			rl.DrawText("LOGO SCREEN", 20, 20, 40, rl.LightGray)
-			text := "WAIT FOR 2 SECONDS..."
+			text := "LOGO SCREEN"
 			pos := game.getCenteredTextPos(text, game.Config.DefaultFontSize, float32(game.Config.DefaultFontSpacing))
 			rl.DrawText(text, pos.X, pos.Y, game.Config.DefaultFontSize, rl.Gray)
 		case TITLE:
@@ -69,6 +67,10 @@ func (game *Game) Start() {
 				game.Metadata.CurrentGameScreen = GAMEPLAY
 			}
 		case GAMEPLAY:
+			if DebugMode {
+				rl.DrawLine(game.Config.WindowWidth/2, 0, game.Config.WindowWidth/2, game.Config.WindowHeight, rl.Red)
+				rl.DrawLine(0, game.Config.WindowHeight/2, game.Config.WindowWidth, game.Config.WindowHeight/2, rl.Red)
+			}
 			pressedKey := rl.GetKeyPressed()
 			if pressedKey == 256 {
 				game.Metadata.CurrentGameScreen = PAUSED

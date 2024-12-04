@@ -1,13 +1,19 @@
 package player
 
 import (
+	"learning-raylib/config"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+var DebugMode bool = false
 
 type Metadata struct {
 	CurrentFrame int8
 	FrameSpeed   int8
-	FrameRect    rl.Rectangle
+	SrcRect      rl.Rectangle
+	DestRect     rl.Rectangle
+	Origin       rl.Vector2
 	Position     rl.Vector2
 	Texture      rl.Texture2D
 }
@@ -23,27 +29,62 @@ const (
 )
 
 type Player struct {
+	Camera   rl.Camera2D
 	Metadata Metadata
-	Position rl.Vector2
 	State    State
 	Textures Textures
 }
 
-func Initialize() Player {
+func Initialize(config config.Config, debugMode bool) Player {
+	// set the debug mode
+	DebugMode = debugMode
+
+	// load the textures before setting the player's metadata
 	textures := LoadTextures()
-	frameRect := rl.Rectangle{
+
+	// set the player's metadata
+	frameWidth := float32(textures.Idle.Width) / 6
+	frameHeight := float32(textures.Idle.Height)
+	destRect := rl.Rectangle{
+		X:      float32(config.WindowWidth / 2),
+		Y:      float32(config.WindowHeight / 2),
+		Width:  frameWidth * 2,
+		Height: frameHeight * 2,
+	}
+	origin := rl.Vector2{
+		X: frameWidth,
+		Y: frameHeight,
+	}
+	position := rl.Vector2{
+		X: float32(config.WindowWidth / 2),
+		Y: float32(config.WindowHeight / 2),
+	}
+	srcRect := rl.Rectangle{
 		X:      0.0,
 		Y:      0.0,
-		Width:  float32(textures.Idle.Width) / 6,
-		Height: float32(textures.Idle.Height),
+		Width:  frameWidth,
+		Height: frameHeight,
 	}
+
+	// set the camera
+	camera := rl.Camera2D{
+		Offset:   position,
+		Rotation: 0.0,
+		Target:   position,
+		Zoom:     1.0,
+	}
+
 	metadata := Metadata{
 		CurrentFrame: 0,
+		DestRect:     destRect,
 		FrameSpeed:   15,
-		FrameRect:    frameRect,
+		Origin:       origin,
+		Position:     position,
+		SrcRect:      srcRect,
 	}
 
 	return Player{
+		Camera:   camera,
 		Metadata: metadata,
 		State:    IDLE,
 		Textures: textures,
@@ -51,11 +92,17 @@ func Initialize() Player {
 }
 
 func (player *Player) Idle(pos rl.Vector2) {
-	rl.DrawTextureRec(player.Textures.Idle, player.Metadata.FrameRect, pos, rl.White)
+	if DebugMode {
+		rl.DrawRectangleLines(int32(player.Metadata.DestRect.X-player.Metadata.SrcRect.Width), int32(player.Metadata.DestRect.Y-player.Metadata.SrcRect.Height), int32(player.Metadata.DestRect.Width), int32(player.Metadata.DestRect.Height), rl.Red)
+	}
+	rl.DrawTexturePro(player.Textures.Idle, player.Metadata.SrcRect, player.Metadata.DestRect, player.Metadata.Origin, 0.0, rl.White)
 }
 
 func (player *Player) Run(pos rl.Vector2) {
-	rl.DrawTextureRec(player.Textures.Run, player.Metadata.FrameRect, pos, rl.White)
+	if DebugMode {
+		rl.DrawRectangleLines(int32(player.Metadata.DestRect.X-player.Metadata.SrcRect.Width), int32(player.Metadata.DestRect.Y-player.Metadata.SrcRect.Height), int32(player.Metadata.DestRect.Width), int32(player.Metadata.DestRect.Height), rl.Red)
+	}
+	rl.DrawTexturePro(player.Textures.Run, player.Metadata.SrcRect, player.Metadata.DestRect, player.Metadata.Origin, 0.0, rl.White)
 }
 
 type MovementDirection int

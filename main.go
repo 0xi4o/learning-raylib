@@ -1,12 +1,15 @@
 package main
 
 import (
+	"flag"
 	"learning-raylib/characters/player"
 	"learning-raylib/config"
 	"learning-raylib/inputs"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+var DebugMode bool = false
 
 type GameScreen int
 
@@ -31,6 +34,10 @@ type Game struct {
 }
 
 func main() {
+	debugMode := flag.Bool("debug", false, "set debug mode")
+	flag.Parse()
+	DebugMode = *debugMode
+
 	// initialize game config
 	gameConfig := config.GetGameConfig()
 
@@ -45,7 +52,7 @@ func main() {
 	rl.InitWindow(int32(gameConfig.WindowWidth), int32(gameConfig.WindowHeight), gameConfig.WindowTitle)
 
 	// initialize player
-	player := player.Initialize()
+	player := player.Initialize(gameConfig, DebugMode)
 
 	game := Game{
 		Config:   gameConfig,

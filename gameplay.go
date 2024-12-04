@@ -7,8 +7,8 @@ import (
 func (game *Game) Gameplay() {
 	switch game.Player.State {
 	case player.IDLE:
-		game.Player.Idle(game.Player.Position)
+		game.Player.Idle(game.Player.Metadata.Position)
 	case player.RUNNING:
-		game.Player.Run(game.Player.Position)
+		game.Player.Run(game.Player.Metadata.Position)
 	}
 }
